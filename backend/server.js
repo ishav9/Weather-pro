@@ -13,21 +13,48 @@ const errorHandler = require("./middleware/errorHandler")
 const app = express()
 
 // Connect to MongoDB with optimized settings
-mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/weatherapp", {
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    bufferCommands: false, // Disable mongoose buffering
-    bufferMaxEntries: 0, // Disable mongoose buffering
-  })
-  .then(() => {
+let isConnected = false
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/weatherapp", {
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      bufferCommands: false, // Disable mongoose buffering
+      bufferMaxEntries: 0, // Disable mongoose buffering
+    })
+    
+    isConnected = true
     console.log("📦 Connected to MongoDB")
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error("❌ MongoDB connection error:", error.message)
-    console.log("⚠️  Running without database connection")
-  })
+    throw error
+  }
+}
+
+// Initial connection attempt
+connectToDatabase().catch(console.error)
+
+// Middleware to ensure database connection
+const ensureConnection = async (req, res, next) => {
+  try {
+    if (!isConnected || mongoose.connection.readyState !== 1) {
+      await connectToDatabase()
+    }
+    next()
+  } catch (error) {
+    console.error("Database connection failed:", error)
+    return res.status(500).json({ 
+      error: "Database connection failed",
+      message: "Please try again in a moment"
+    })
+  }
+}
 
 // Security middleware
 app.use(helmet({
@@ -62,9 +89,9 @@ app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true }))
 
 // Routes
-app.use("/api/weather", weatherRoutes)
-app.use("/api/auth", authRoutes)
-app.use("/api/user", userRoutes)
+app.use("/api/weather", ensureConnection, weatherRoutes)
+app.use("/api/auth", ensureConnection, authRoutes)
+app.use("/api/user", ensureConnection, userRoutes)
 
 // Root route - API info
 app.get("/", (req, res) => {
