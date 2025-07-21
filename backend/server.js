@@ -33,9 +33,8 @@ app.use(helmet({
 app.use(
   cors({
     origin: [
-      "https://weather-pro-yu9a.vercel.app", // Your frontend URL
-      "http://localhost:3000", // Local development
-      "http://localhost:5173", // Vite dev server
+      "https://weather-final-pro.vercel.app", // Your frontend URL
+      "http://localhost:5173", // Vite dev server for local development
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
