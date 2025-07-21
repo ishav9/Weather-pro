@@ -13,8 +13,8 @@ const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email })
+    // Check if user exists with lean query for speed
+    const existingUser = await User.findOne({ email }).lean()
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" })
     }
@@ -55,8 +55,8 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
 
-    // Check if user exists
-    const user = await User.findOne({ email })
+    // Check if user exists with lean query for speed
+    const user = await User.findOne({ email }).lean()
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" })
     }
