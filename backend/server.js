@@ -27,7 +27,7 @@ mongoose
 app.use(helmet())
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: true, // Allow all origins for testing
     credentials: true,
   }),
 )
@@ -47,6 +47,25 @@ app.use(express.urlencoded({ extended: true }))
 app.use("/api/weather", weatherRoutes)
 app.use("/api/auth", authRoutes)
 app.use("/api/user", userRoutes)
+
+// Root route - API info
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Weather App Backend API",
+    version: "1.0.0",
+    endpoints: {
+      health: "/health",
+      weather: "/api/weather/current?city=London",
+      forecast: "/api/weather/forecast?city=London", 
+      auth: {
+        login: "/api/auth/login (POST)",
+        register: "/api/auth/register (POST)"
+      }
+    },
+    status: "running",
+    timestamp: new Date().toISOString()
+  })
+})
 
 // Health check
 app.get("/health", (req, res) => {
