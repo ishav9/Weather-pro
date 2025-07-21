@@ -29,28 +29,21 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }))
 
-// CORS configuration - Allow all origins and methods
+// CORS configuration - Allow specific origins
 app.use(
   cors({
-    origin: "*", // Allow all origins
+    origin: [
+      "https://weather-pro-yu9a.vercel.app", // Your frontend URL
+      "http://localhost:3000", // Local development
+      "http://localhost:5173", // Vite dev server
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    credentials: false, // Set to false when using wildcard origin
+    credentials: true, // Can be true now with specific origins
   })
 )
 
-// Additional CORS headers middleware
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-  
-  if (req.method === "OPTIONS") {
-    res.sendStatus(200)
-  } else {
-    next()
-  }
-})
+// Remove conflicting CORS headers - handled by cors() middleware above
 
 // Rate limiting
 const limiter = rateLimit({
