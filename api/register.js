@@ -16,22 +16,13 @@ if (mongoose.connection.readyState === 0) {
 
 module.exports = async (req, res) => {
   try {
-    const url = req.url || ''
-    
     if (req.method === 'POST') {
-      if (url.includes('/login') || url.endsWith('/login')) {
-        return await authController.login(req, res)
-      } else if (url.includes('/register') || url.endsWith('/register')) {
-        return await authController.register(req, res)
-      } else {
-        // Default to register for /api/auth POST requests
-        return await authController.register(req, res)
-      }
+      return await authController.register(req, res)
     } else {
-      res.status(405).json({ error: "Method not allowed. Use POST for login/register." })
+      res.status(405).json({ error: "Method not allowed. Use POST for registration." })
     }
   } catch (error) {
-    console.error("Auth API error:", error)
+    console.error("Register API error:", error)
     res.status(500).json({ error: "Internal server error" })
   }
 }

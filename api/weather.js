@@ -16,13 +16,24 @@ if (mongoose.connection.readyState === 0) {
 
 module.exports = async (req, res) => {
   try {
+    // Parse the URL to determine which weather endpoint to call
+    const url = req.url || ''
+    
     if (req.method === 'GET') {
-      if (req.query.city) {
-        return await weatherController.getCurrentWeather(req, res)
-      } else if (req.query.lat && req.query.lon) {
-        return await weatherController.getCurrentWeatherByCoords(req, res)
+      if (url.includes('/current') || req.query.city || (req.query.lat && req.query.lon)) {
+        // Current weather endpoint
+        if (req.query.lat && req.query.lon) {
+          return await weatherController.getCurrentWeather(req, res)
+        } else {
+          return await weatherController.getWeather(req, res)
+        }
+      } else if (url.includes('/forecast')) {
+        // Forecast endpoint
+        return await weatherController.getForecast(req, res)
       } else {
-        return res.status(400).json({ error: "City name or coordinates (lat, lon) required" })
+        return res.status(400).json({ 
+          error: "Weather endpoint not specified. Use /api/weather?city=London or /api/weather/forecast?city=London" 
+        })
       }
     } else {
       res.status(405).json({ error: "Method not allowed" })
