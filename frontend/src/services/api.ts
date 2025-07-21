@@ -10,7 +10,7 @@ console.log("API Configuration:", {
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for Vercel cold starts
 })
 
 // Add token to requests
